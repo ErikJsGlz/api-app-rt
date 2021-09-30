@@ -1,3 +1,4 @@
+const UsersModel = require('../models/users');
 
 //TODO: Agregar funcionalidad de login
 module.exports.login = (req, res) => {
@@ -5,12 +6,49 @@ module.exports.login = (req, res) => {
     
 }
 
-// TODO: Agregar funcionalidad de register
 module.exports.register = (req, res) => {
-    res.json({message:"request received"})
+    const { email, password, name, last_name } = req.body
+    let user = new UsersModel({email: email, password: password, name: name, last_name: last_name, type: "Usuario"});
+
+    try {
+        user.save();
+        res.json(user);
+        console.log(`Usuario creado con id: ${user._id}`);
+    } 
+    catch (err) {
+        res.status(503).send(`error: ${err.message}`);
+        console.log(err.message);
+    }
 }
 
-// TODO: Agregar funcionalidad de cambiar a admin
 module.exports.change_to_admin = (req, res) => {
-    res.json({message:"request received"});
+    const email = req.body.email;
+    try {
+        UsersModel.updateOne({ email: email }, {
+                $set: {
+                    type: "Administrador"
+                }
+            },
+            function(error, info) {
+                if (error) {
+                    res.json({
+                        resultado: false,
+                        msg: 'No se pudo modificar el cliente',
+                        err
+                    });
+                } 
+                else {
+                    res.json({
+                        resultado: true,
+                        info: info
+                    })
+                }
+            }
+        )
+        res.json({message: "request received"});
+    }
+    catch(err) {
+        res.status(503).send(`error: ${err.message}`);
+        console.log(err.message);
+    }
 }
