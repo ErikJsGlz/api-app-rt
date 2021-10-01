@@ -6,12 +6,12 @@ module.exports.login = (req, res) => {
     
 }
 
-module.exports.register = (req, res) => {
+module.exports.register = async (req, res) => {
     const { email, password, name, last_name } = req.body
     let user = new UsersModel({email: email, password: password, name: name, last_name: last_name, type: "Usuario"});
 
     try {
-        user.save();
+        await user.save();
         res.json(user);
         console.log(`Usuario creado con id: ${user._id}`);
     } 
@@ -45,10 +45,10 @@ module.exports.change_to_admin = (req, res) => {
                 }
             }
         )
-        res.json({message: "request received"});
+        res.json({message: "update made"});
     }
     catch(err) {
-        res.status(503).send(`error: ${err.message}`);
+        res.status(404).send(`error: ${err.message}`);
         console.log(err.message);
     }
 }

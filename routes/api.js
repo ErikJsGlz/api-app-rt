@@ -11,7 +11,8 @@ router.post('/user/change_admin', user_controller.change_to_admin);
 // routes for reports
 var report_controller = require('../controllers/report.controller');
 router.post('/report/register', report_controller.register_report);
-router.get('/report/import', report_controller.import_reports);
+router.get('/report/import_admin', report_controller.import_reports_admin);
+router.get('/report/import_user', report_controller.import_reports_user);
 router.post('/report/change_status', report_controller.change_status);
 
 
