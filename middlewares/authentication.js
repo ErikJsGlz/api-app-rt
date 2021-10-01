@@ -18,7 +18,7 @@ function requireLogin(req, res, next) {
         req.user = payload; // you can retrieve further details from the database. Here I am just taking the name to render it wherever it is needed.
         next()
     }
-    catch (e) {
+    catch (err) {
         // Maybe it expired, or something else even though the token is valid
         return res.status(403).json("You need to login first")
     }

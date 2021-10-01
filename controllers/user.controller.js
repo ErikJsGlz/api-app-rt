@@ -1,5 +1,7 @@
 const UsersModel = require('../models/users');
 
+// TODO: Añadir lo de JWT
+
 //TODO: Agregar funcionalidad de login
 module.exports.login = (req, res) => {
     var user = req.body.user;
