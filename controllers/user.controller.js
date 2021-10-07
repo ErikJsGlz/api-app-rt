@@ -18,22 +18,27 @@ module.exports = {
     }
   },
   register: async (req, res, next) => {
-    const { email, password, name, last_name } = req.body;
-    let user = new UsersModel({
-      email: email,
-      password: password,
-      name: name,
-      last_name: last_name,
-      type: "Usuario",
-    });
-
-    try {
-      await user.save();
-      res.json(user);
-      console.log(`Usuario creado con id: ${user._id}`);
-    } catch (err) {
-      res.status(503).send(`error: ${err.message}`);
-      console.log(err.message);
+    const { email, password, repeated_password, name, last_name } = req.body;
+    if(password == repeated_password) {
+      let user = new UsersModel({
+        email: email,
+        password: password,
+        name: name,
+        last_name: last_name,
+        type: "Usuario",
+      });
+  
+      try {
+        await user.save();
+        res.json(user);
+        console.log(`Usuario creado con id: ${user._id}`);
+      } catch (err) {
+        res.status(503).send(`error: ${err.message}`);
+        console.log(err.message);
+      }
+    } else {
+      res.status(400).send(`error: Las contraseñas no coinciden`);
+      console.log("Las contraseñas no coinciden");
     }
   },
   // Se cambia una cuenta de tipo "Usuario" a "Administrador"
