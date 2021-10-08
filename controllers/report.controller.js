@@ -60,6 +60,8 @@ module.exports = {
       res.status(503).end("error in request reports");
     }
   },
+
+  
   change_status: async (req, res, next) => {
     const id = req.body.id;
     try {

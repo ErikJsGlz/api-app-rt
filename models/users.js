@@ -5,7 +5,8 @@ const UsersSchema = new mongoose.Schema({
     password : {type: String, require: true},
     name : {type: String, required: false},
     last_name : {type: String, required: false},
-    type : {type: String, required: false}
+    type : {type: String, required: false},
+    principal :{type: Boolean, required: false}
 });
 
 module.exports = new mongoose.model('users', UsersSchema);
