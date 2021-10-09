@@ -9,6 +9,7 @@ router.post("/user/login", user_controller.login);
 router.post("/user/register", user_controller.register);
 router.post("/user/change_admin", requireLogin, user_controller.change_to_admin);
 router.put("/user/reset_password", requireLogin, user_controller.reset_password);
+router.put("/user/new_main_admin", requireLogin, user_controller.new_main_admin);
 
 // routes for reports
 var report_controller = require("../controllers/report.controller");

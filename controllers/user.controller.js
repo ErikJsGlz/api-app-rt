@@ -36,7 +36,7 @@ module.exports = {
       res.status(200).json({ token: accessToken, idUsuario: user.idUsuario });
     } else {
       res.status(401).send("Error: Invalid credentials");
-      console.log(`Invalid credentials ${user.name}:${user.password}`);
+      console.log(`Invalid credentials`);
     }
   },
 
@@ -88,7 +88,7 @@ module.exports = {
 
     //Verificamos si es admin y si es el Principal
     let admin = await UsersModel.findOne({ _id: payload.id });
-    if (admin.type == "Administrador" && admin.principal) {
+    if (admin.type == "Administrador" && admin.main) {
       let new_admin = await UsersModel.findOne({ email: email });
 
       if (new_admin) {
@@ -122,7 +122,7 @@ module.exports = {
 
     } else {
       res.status(403).send("Error: No tienes permisos");
-      console.log(admin.type + " " + admin.principal);
+      console.log("No es un Administrador o no es el Administrador Principal");
     }
   },
 
@@ -143,7 +143,7 @@ module.exports = {
             let hash_password = sha256.create();
             hash_password.update(new_password);
             hash_password.hex();
-            
+
             user.password = hash_password;
             await user.save();
             res.json({ message: "Actualización hecha" });
@@ -163,6 +163,41 @@ module.exports = {
     } else {
       res.status(400).send("Error: Nuevas contraseñas no coinciden");
       console.log("No coinciden las nuevas contraseñas");
+    }
+  },
+
+  // Cambiamos el admin principal
+  new_main_admin: async (req, res, next) => {
+    // Obtenemos el id
+    const accessToken = req.headers.authorization.split(" ")[1];
+    payload = jwt.verify(accessToken, secret);
+
+    const { email } = req.body;
+
+    let mainAdmin = await UsersModel.findOne({ _id : payload.id});
+    if (mainAdmin.type == "Administrador" && mainAdmin.main) {
+      let new_main_admin = await UsersModel.findOne({ email : email});
+
+      if (new_main_admin) {
+        try {
+          new_main_admin.main = true;
+          mainAdmin.main = false;
+          await new_main_admin.save();
+          await mainAdmin.save();
+          res.json({message : "Se cambió el Administrador Principal"});
+          console.log(`El usuario: ${new_main_admin._id} es ahora Administrador Principal`);
+        } catch (err) {
+          res.status(400).send("Error: No se pudo actualizar al usuario");
+            console.log(`No se pudo actualizar el usuario con el ${new_main_admin._id}`);
+        }
+      } else {
+        res.status(400).send("Error: No existe el usuario");
+        console.log("Usuario inexistente");
+      }
+      
+    } else {
+      res.status(403).send("Error: No tienes permisos");
+      console.log("El usuario no tiene permisos");
     }
   },
 };
