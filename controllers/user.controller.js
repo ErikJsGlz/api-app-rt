@@ -1,8 +1,14 @@
 const UsersModel = require("../models/users");
+const ReportsModel = require("../models/report");
 const { generateToken } = require("../middlewares/authentication");
 const { secret } = require('../config');
 const jwt = require("jsonwebtoken");
 var sha256 = require('js-sha256');
+
+function get_payload(header) {
+  const accessToken = header.split(" ")[1];
+  return payload = jwt.verify(accessToken, secret);
+}
 
 module.exports = {
 
@@ -81,10 +87,9 @@ module.exports = {
   // Se cambia una cuenta de tipo "Usuario" a "Administrador"
   change_to_admin: async (req, res, next) => {
     // Obtenemos el id
-    const accessToken = req.headers.authorization.split(" ")[1];
-    payload = jwt.verify(accessToken, secret);
+    payload = get_payload(req.headers.authorization);
 
-    const { email, addOrDelete } = req.body;
+    const { email, add_or_delete } = req.body;
 
     //Verificamos si es admin y si es el Principal
     let admin = await UsersModel.findOne({ _id: payload.id });
@@ -93,7 +98,7 @@ module.exports = {
 
       if (new_admin) {
         // Si es true, entonces se actualiza a administrador, de lo contrario baja su categoría a visitante
-        if (addOrDelete) {
+        if (add_or_delete) {
           try {
             new_admin.type = "Administrador";
             await new_admin.save();
@@ -128,14 +133,12 @@ module.exports = {
 
   // Cambiamos la contraseña
   reset_password: async (req, res, next) => {
-    const { idUsuario,
-      password,
-      new_password,
-      repeated_new_password } = req.body;
+    payload = get_payload(req.headers.authorization);
+    const { password, new_password, repeated_new_password } = req.body;
 
     // Validamos si son contraseñas iguales, si existe el usuario y si coinciden con el usuario
     if (new_password == repeated_new_password) {
-      let user = await UsersModel.findOne({ _id: idUsuario });
+      let user = await UsersModel.findOne({ _id: payload.id });
 
       if (user) {
         if (password == user.password) {
@@ -169,8 +172,7 @@ module.exports = {
   // Cambiamos el admin principal
   new_main_admin: async (req, res, next) => {
     // Obtenemos el id
-    const accessToken = req.headers.authorization.split(" ")[1];
-    payload = jwt.verify(accessToken, secret);
+    payload = get_payload(req.headers.authorization);
 
     const { email } = req.body;
 
@@ -188,13 +190,37 @@ module.exports = {
           console.log(`El usuario: ${new_main_admin._id} es ahora Administrador Principal`);
         } catch (err) {
           res.status(400).send("Error: No se pudo actualizar al usuario");
-            console.log(`No se pudo actualizar el usuario con el ${new_main_admin._id}`);
+          console.log(`No se pudo actualizar el usuario con el ${new_main_admin._id}`);
         }
       } else {
         res.status(400).send("Error: No existe el usuario");
         console.log("Usuario inexistente");
       }
       
+    } else {
+      res.status(403).send("Error: No tienes permisos");
+      console.log("El usuario no tiene permisos");
+    }
+  },
+
+  block_anony_reports: async (req, res, next) => {
+    // Obtenemos el id
+    payload = get_payload(req.headers.authorization);
+    let user = await UsersModel.findOne({ _id : payload.id});
+    const { block } = req.body;
+
+    if (user.type == "Administrador") {
+      try {  
+        let report = await ReportsModel.findOne({anony_reports : {$in: [true, false]}});
+        if (block) { report.anony_reports = true; } 
+        else { report.anony_reports = false; }
+        await report.save();
+        res.json({message : "Cambió el estado de los reportes anónimos a " + block});
+        console.log("Reportes anónimos: " + block);
+      } catch (err) {
+        res.status(400).send("Error: No se pudo actualizar el estado de los reportes anónimos");
+        console.log("Los reportes anónimos tienen estado: " + block);
+      }
     } else {
       res.status(403).send("Error: No tienes permisos");
       console.log("El usuario no tiene permisos");

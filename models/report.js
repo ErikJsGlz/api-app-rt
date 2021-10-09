@@ -9,6 +9,7 @@ const ReportsSchema = new mongoose.Schema({
   description: { type: String, require: true },
   gps: { type: String, require: true },
   photo: { type: String, require: false }, //Podría no mandar una foto
+  anony_reports: { type: Boolean, require: false }
 });
 
 module.exports = new mongoose.model("reports", ReportsSchema);
