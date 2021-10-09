@@ -2,6 +2,7 @@ const UsersModel = require("../models/users");
 const { generateToken } = require("../middlewares/authentication");
 const { secret } = require('../config');
 const jwt = require("jsonwebtoken");
+var sha256 = require('js-sha256');
 
 module.exports = {
 
@@ -21,7 +22,12 @@ module.exports = {
   // Crear un nuevo usuario
   login: async (req, res, next) => {
     const { email, password } = req.body;
-    let user = await UsersModel.findOne({ email: email, password: password });
+
+    let hash_password = sha256.create();
+    hash_password.update(password);
+    hash_password.hex();
+
+    let user = await UsersModel.findOne({ email: email, password: hash_password });
 
     if (user) {
       console.log(`Succesfully logged ${user.name} in`);
@@ -37,10 +43,15 @@ module.exports = {
   // Se registra un nuevo usuario
   register: async (req, res, next) => {
     const { email, password, repeated_password, name, last_name } = req.body;
+
+    let hash_password = sha256.create();
+    hash_password.update(password);
+    hash_password.hex();
+
     if (password == repeated_password) {
       let user = new UsersModel({
         email: email,
-        password: password,
+        password: hash_password,
         name: name,
         last_name: last_name,
         type: "Visitante",
@@ -129,7 +140,11 @@ module.exports = {
       if (user) {
         if (password == user.password) {
           try {
-            user.password = new_password;
+            let hash_password = sha256.create();
+            hash_password.update(new_password);
+            hash_password.hex();
+            
+            user.password = hash_password;
             await user.save();
             res.json({ message: "Actualización hecha" });
             console.log(`Contraseña actualizada del usuario: ${user._id}`);
