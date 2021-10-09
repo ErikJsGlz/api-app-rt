@@ -12,6 +12,7 @@ router.post("/user/change_admin", requireLogin, user_controller.change_to_admin)
 router.put("/user/reset_password", requireLogin, user_controller.reset_password);
 router.put("/user/new_main_admin", requireLogin, user_controller.new_main_admin);
 router.put("/user/block_anony_reports", requireLogin, user_controller.block_anony_reports);
+router.put("/user/block_user", requireLogin, user_controller.block_user);
 
 // routes for reports
 var report_controller = require("../controllers/report.controller");

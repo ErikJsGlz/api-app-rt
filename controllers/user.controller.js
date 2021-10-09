@@ -19,7 +19,8 @@ module.exports = {
 
     if (user) {
       res.status(200).json({ name: user.name, last_name: user.last_name, idUsuario: user.idUsuario });
-    } else {
+    }
+    else {
       res.status(400).send("No existe el usuario");
       console.log("Usuario inexistente");
     }
@@ -40,7 +41,8 @@ module.exports = {
       // Generate an access token and send it to user
       const accessToken = generateToken(user);
       res.status(200).json({ token: accessToken, idUsuario: user.idUsuario });
-    } else {
+    }
+    else {
       res.status(401).send("Error: Invalid credentials");
       console.log(`Invalid credentials`);
     }
@@ -70,15 +72,18 @@ module.exports = {
           await user.save();
           res.json(user);
           console.log(`Usuario creado con id: ${user._id}`);
-        } catch (err) {
+        }
+        catch (err) {
           res.status(503).send(`Error: ${err.message}`);
           console.log(err.message);
         }
-      } else {
+      }
+      else {
         res.status(400).send("Error: Ya hay un usuario con ese correo");
         console.log("Usuario repetido");
       }
-    } else {
+    }
+    else {
       res.status(400).send(`Error: Las contraseñas no coinciden`);
       console.log("Contraseñas no coinciden");
     }
@@ -104,28 +109,31 @@ module.exports = {
             await new_admin.save();
             res.json({ message: "Se actualizó a Administrador" });
             console.log(`El usuario: ${new_admin._id} es ahora Administrador`);
-          } catch (err) {
+          }
+          catch (err) {
             res.status(400).send("Error: No se pudo actualizar al usuario");
             console.log(`No se pudo actualizar el usuario con el ${new_admin._id}`);
           }
-        } else {
+        }
+        else {
           try {
             new_admin.type = "Visitante";
             await new_admin.save()
             res.json({ message: "Se actualizó a Visitante" });
             console.log(`El usuario: ${new_admin._id} es ahora Visitante`);
-          } catch (err) {
+          }
+          catch (err) {
             res.status(400).send("Error: No se pudo actualizar al usuario");
             console.log(`No se pudo actualizar el usuario con el ${new_admin._id}`);
           }
         }
-      } else {
+      }
+      else {
         res.status(400).send("Error: No existe el usuario");
         console.log("Usuario inexistente");
       }
-
-
-    } else {
+    }
+    else {
       res.status(403).send("Error: No tienes permisos");
       console.log("No es un Administrador o no es el Administrador Principal");
     }
@@ -151,19 +159,23 @@ module.exports = {
             await user.save();
             res.json({ message: "Actualización hecha" });
             console.log(`Contraseña actualizada del usuario: ${user._id}`);
-          } catch (err) {
+          }
+          catch (err) {
             res.status(503).send(`Error: ${err.message}`);
             console.log(err.message);
           }
-        } else {
+        }
+        else {
           res.status(400).send("Error: No coinciden contraseña");
           console.log("No coinciden contraseñas");
         }
-      } else {
+      }
+      else {
         res.status(400).send("Error: No existe el usuario");
         console.log("Usuario inexistente");
       }
-    } else {
+    }
+    else {
       res.status(400).send("Error: Nuevas contraseñas no coinciden");
       console.log("No coinciden las nuevas contraseñas");
     }
@@ -176,52 +188,97 @@ module.exports = {
 
     const { email } = req.body;
 
-    let mainAdmin = await UsersModel.findOne({ _id : payload.id});
+    let mainAdmin = await UsersModel.findOne({ _id: payload.id });
     if (mainAdmin.type == "Administrador" && mainAdmin.main) {
-      let new_main_admin = await UsersModel.findOne({ email : email});
+      let new_main_admin = await UsersModel.findOne({ email: email });
 
       if (new_main_admin) {
         try {
           new_main_admin.main = true;
           mainAdmin.main = false;
+
           await new_main_admin.save();
           await mainAdmin.save();
-          res.json({message : "Se cambió el Administrador Principal"});
+
+          res.json({ message: "Se cambió el Administrador Principal" });
           console.log(`El usuario: ${new_main_admin._id} es ahora Administrador Principal`);
-        } catch (err) {
+        }
+        catch (err) {
           res.status(400).send("Error: No se pudo actualizar al usuario");
           console.log(`No se pudo actualizar el usuario con el ${new_main_admin._id}`);
         }
-      } else {
+      }
+      else {
         res.status(400).send("Error: No existe el usuario");
         console.log("Usuario inexistente");
       }
-      
-    } else {
+
+    }
+    else {
       res.status(403).send("Error: No tienes permisos");
       console.log("El usuario no tiene permisos");
     }
   },
 
+  // Permitimos o bloqueamos los reportes anónimos
   block_anony_reports: async (req, res, next) => {
-    // Obtenemos el id
+    // Obtenemos el id y buscamos el usuario
     payload = get_payload(req.headers.authorization);
-    let user = await UsersModel.findOne({ _id : payload.id});
+    let user = await UsersModel.findOne({ _id: payload.id });
     const { block } = req.body;
 
     if (user.type == "Administrador") {
-      try {  
-        let report = await ReportsModel.findOne({anony_reports : {$in: [true, false]}});
-        if (block) { report.anony_reports = true; } 
+      try {
+        // Encontramos el elemento de reportes anónimos y lo cambiamos según sea el caso
+        let report = await ReportsModel.findOne({ anony_reports: { $in: [true, false] } });
+
+        if (block) { report.anony_reports = true; }
         else { report.anony_reports = false; }
         await report.save();
-        res.json({message : "Cambió el estado de los reportes anónimos a " + block});
+
+        res.json({ message: "Cambió el estado de los reportes anónimos a " + block });
         console.log("Reportes anónimos: " + block);
-      } catch (err) {
+      }
+      catch (err) {
         res.status(400).send("Error: No se pudo actualizar el estado de los reportes anónimos");
         console.log("Los reportes anónimos tienen estado: " + block);
       }
-    } else {
+    }
+    else {
+      res.status(403).send("Error: No tienes permisos");
+      console.log("El usuario no tiene permisos");
+    }
+  },
+
+  block_user: async (req, res, next) => {
+    // Obtenemos el id y buscamos el admin
+    payload = get_payload(req.headers.authorization);
+    let admin = await UsersModel.findOne({ _id: payload.id });
+    const { idUsuario } = req.body;
+
+    if (admin.type == "Administrador") {
+      try {
+        let user = await UsersModel.findOne({ _id: idUsuario });
+
+        // Solo se pueden bloquear usuarios visitantes y no a otros administrador
+        if (user.type == "Visitante") { 
+          user.block = true; 
+          await user.save();
+
+          res.json({ message: "El usuario: " + user.id + " ahora está bloqueado" });
+          console.log(user.id + " está ahora bloqueado");
+        }
+        else {
+          res.json({ message: "El usuario: " + user.id + " es Administrador y no se puede bloquear"});
+          console.log(user.id + " es Administrador");
+        }
+      }
+      catch (err) {
+        res.status(400).send("Error: No se puedo cambiar el estado del usuario");
+        console.log("Usuario sin cambiar de estado");
+      }
+    }
+    else {
       res.status(403).send("Error: No tienes permisos");
       console.log("El usuario no tiene permisos");
     }

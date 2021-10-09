@@ -1,14 +1,21 @@
 const ReportsModel = require("../models/report");
+const UsersModel = require("../models/users");
+const { secret } = require('../config');
+const jwt = require("jsonwebtoken");
 
-// TODO: verificar si el usuario es un usuario permitido
-// Si están bloqueados los reportes anónimos y no está logueado, no puede registrar un nuevo reporte
+// Si están bloqueados los reportes anónimos y no está logueado o está bloqueado, no puede registrar un nuevo reporte
 function anony_reports(req, res, next) {
-    let report = ReportsModel.findOne({anony_reports : {$in: [true, false]}});
+    let report = ReportsModel.findOne({ anony_reports: { $in: [true, false] } });
 
-    if (!report.anony_reports && !req.headers.authorization) {
+    const accessToken = req.headers.authorization.split(" ")[1];
+    payload = jwt.verify(accessToken, secret);
+    let user = UsersModel.findOne({ _id: payload.id });
+
+    if (!report.anony_reports && !req.headers.authorization || user.block) {
         console.log("No tienes autorización");
         return res.status(403).send({ message: "Necesitas loguearte primero" });
-    } else {
+    }
+    else {
         next();
     }
 }
