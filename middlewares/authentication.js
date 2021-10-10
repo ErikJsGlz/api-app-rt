@@ -1,4 +1,4 @@
-const secret = "4pPR1S3Ct@rjsj";
+const { secret } = require('../config');
 const jwt = require("jsonwebtoken");
 
 // Middleware function to require a login
@@ -14,7 +14,7 @@ function requireLogin(req, res, next) {
     // Format is: Authorization: Bearer <token>, so in "Bearer <token>" after the first space we get the token
     const accessToken = req.headers.authorization.split(" ")[1];
     payload = jwt.verify(accessToken, secret);
-    console.log("Logged user accessing the site " + payload.username);
+    console.log("Logged user accessing the site " + payload.id);
     req.user = payload; // you can retrieve further details from the database. Here I am just taking the name to render it wherever it is needed.
     next();
   } catch (err) {
