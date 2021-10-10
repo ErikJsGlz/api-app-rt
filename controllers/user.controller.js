@@ -1,14 +1,7 @@
 const UsersModel = require("../models/users");
 const ReportsModel = require("../models/report");
 const { generateToken } = require("../middlewares/authentication");
-const { secret } = require('../config');
-const jwt = require("jsonwebtoken");
 var sha256 = require('js-sha256');
-
-function get_payload(header) {
-  const accessToken = header.split(" ")[1];
-  return payload = jwt.verify(accessToken, secret);
-}
 
 module.exports = {
 
@@ -92,7 +85,7 @@ module.exports = {
   // Se cambia una cuenta de tipo "Usuario" a "Administrador"
   change_to_admin: async (req, res, next) => {
     // Obtenemos el id
-    payload = get_payload(req.headers.authorization);
+    const payload = req.user;
 
     const { email, add_or_delete } = req.body;
 
@@ -141,7 +134,7 @@ module.exports = {
 
   // Cambiamos la contraseña
   reset_password: async (req, res, next) => {
-    payload = get_payload(req.headers.authorization);
+    const payload = req.user;
     const { password, new_password, repeated_new_password } = req.body;
 
     // Validamos si son contraseñas iguales, si existe el usuario y si coinciden con el usuario
@@ -184,7 +177,7 @@ module.exports = {
   // Cambiamos el admin principal
   new_main_admin: async (req, res, next) => {
     // Obtenemos el id
-    payload = get_payload(req.headers.authorization);
+    const payload = req.user;
 
     const { email } = req.body;
 
@@ -223,7 +216,7 @@ module.exports = {
   // Permitimos o bloqueamos los reportes anónimos
   block_anony_reports: async (req, res, next) => {
     // Obtenemos el id y buscamos el usuario
-    payload = get_payload(req.headers.authorization);
+    const payload = req.user;
     let user = await UsersModel.findOne({ _id: payload.id });
     const { block } = req.body;
 
@@ -252,7 +245,7 @@ module.exports = {
 
   block_user: async (req, res, next) => {
     // Obtenemos el id y buscamos el admin
-    payload = get_payload(req.headers.authorization);
+    const payload = req.user;
     let admin = await UsersModel.findOne({ _id: payload.id });
     const { idUsuario } = req.body;
 
