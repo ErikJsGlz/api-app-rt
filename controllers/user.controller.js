@@ -30,7 +30,7 @@ module.exports = {
   
       try {
         await user.save();
-        res.json(user);
+        res.send(true);
         console.log(`Usuario creado con id: ${user._id}`);
       } catch (err) {
         res.status(503).send(`error: ${err.message}`);
