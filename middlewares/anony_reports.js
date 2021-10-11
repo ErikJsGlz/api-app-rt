@@ -9,7 +9,7 @@ async function anony_reports(req, res, next)  {
     // const report = await ReportsModel.find();
     console.log(report);
 
-    if (!report.anony_reports && !req.headers.authorization) {
+    if (!report.anony_reports || !req.headers.authorization) {
         if (req.headers.authorization) {
             const accessToken = req.headers.authorization.split(" ")[1];
             payload = jwt.verify(accessToken, secret);
@@ -28,8 +28,7 @@ async function anony_reports(req, res, next)  {
     }
     else {
         return res.status(401).send({ message: "Reportes anónimos bloqueados" });
-    }
-    
+    }  
 }
 
 module.exports = { anony_reports }; 
