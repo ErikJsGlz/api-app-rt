@@ -36,8 +36,8 @@ module.exports = {
       res.status(200).json({ token: accessToken, idUsuario: user.idUsuario });
     }
     else {
-      res.status(401).send("Error: Invalid credentials");
-      console.log(`Invalid credentials`);
+      res.status(401).send("Error: Credencias Invalidas");
+      console.log(`Credenciales invalidas`);
     }
   },
 

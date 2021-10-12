@@ -68,29 +68,81 @@ module.exports = {
     }
   },
 
-  // Importar todos los registros para los administradores
-  import_reports_admin: async (req, res, next) => {
+  // Obtenemos un reporte específico
+  get_report: async (req, res, next) => {
+    const { idReporte } = req.body;
+
     try {
-      let reports = await ReportsModel.find();
+      let report = await ReportsModel.findOne({ _id: idReporte });
+
+      if (report.user) {
+        let user = await UsersModel.findOne({ _id: report.user });
+
+        // Concatenamos todo en un mismo objeto json
+        if (user) { report = report.concat(user); }
+      }
       res.json(reports);
     }
     catch (err) {
-      res.status(503).end("error in request reports");
+      res.status(503).end("No se pudo concretar la petición");
+      console.log("El reporte no existe")
+    }
+
+  },
+
+  // Obtenemos la imagen de un reporte específico
+  get_report_image: async (req, res, next) => {
+    let photoPath = req.params.photoPath;
+    const path = require('path');
+    var appRoot = require('app-root-path');
+    const { reportsPhotoFolder } = require('../config');
+    let fullPath = path.join(appRoot + `/${reportsPhotoFolder}/` + photoPath);
+    res.sendFile(fullPath);
+},
+
+  // Importar todos los registros para los administradores
+  import_reports_admin: async (req, res, next) => {
+    try {
+      // Ocupamos un registro para los registro anónimos, por eso filtramos
+      let reports = await ReportsModel.find({}, { anony_reports: 0, _id: 0 });
+
+      // Eliminamos indices vacíos
+      let real_reports = reports.filter(value => JSON.stringify(value) !== '{}');
+
+      res.json(real_reports);
+    }
+    catch (err) {
+      res.status(503).end("No se pudo concretar la petición");
     }
   },
 
   // Importar todos los registros de un usuario
   import_reports_user: async (req, res, next) => {
-    const email = req.body.email;
-    let user = await UsersModel.findOne({ email: email });
+    const payload = req.user;
+    let user = await UsersModel.findOne({ _id: payload.id });
 
-    try {
-      let reports = await ReportsModel.find({ user: user._id });
-      res.json(reports);
+    if (user) {
+      if (!user.block) {
+        try {
+          let reports = await ReportsModel.find({ user: user._id });
+          res.json(reports);
+        }
+        catch (err) {
+          res.status(503).end("Error en la petición");
+          console.log("Hubo un error en la petición de reportes");
+        }
+      }
+      else {
+        res.status(401).send("Error: Estás bloqueado");
+      console.log("El usuario está bloqueado");
+      }
+      
     }
-    catch (err) {
-      res.status(503).end("error in request reports");
+    else {
+      res.status(401).send("Error: Credencias Invalidas");
+      console.log("Credenciales Invalidas");
     }
+    
   },
 
   //  Cambiamos el status de un reporte
