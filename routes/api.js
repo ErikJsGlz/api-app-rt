@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { requireLogin } = require("../middlewares/authentication");
 const { anony_reports } = require("../middlewares/anony_reports");
+const { uploadMiddleware } = require('../middlewares/upload');
 
 // routes for users
 var user_controller = require("../controllers/user.controller");
@@ -16,9 +17,12 @@ router.put("/user/block_user", requireLogin, user_controller.block_user);
 
 // routes for reports
 var report_controller = require("../controllers/report.controller");
-router.post("/report/register_report", anony_reports, report_controller.register_report);
+router.post("/report/register_report", anony_reports, uploadMiddleware.single('photo'), report_controller.register_report);
+router.get("/report/get_report/", requireLogin, report_controller.get_report);
+router.get("/images/:photoPath", report_controller.get_report_image);
 router.get("/report/import_admin", requireLogin, report_controller.import_reports_admin);
 router.get("/report/import_user", requireLogin, report_controller.import_reports_user);
+router.put("/report/respond_report", requireLogin, report_controller.respond_report);
 router.post("/report/change_status", requireLogin, report_controller.change_status);
 
 module.exports = router;
