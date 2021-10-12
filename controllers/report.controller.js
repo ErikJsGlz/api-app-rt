@@ -38,7 +38,7 @@ module.exports = {
       report.incident_type = incident_type;
 
       // En dado caso que sea otro se registra el nivel de urgencia según el enviado
-      if (incident_type = "Otro") { report.urgency_level = urgency_level; }
+      if (incident_type === "Otro") { report.urgency_level = urgency_level; }
       else { report.urgency_level = false; }
     }
     else {
@@ -112,18 +112,24 @@ module.exports = {
     const { user_id, incident_type, visitor_type, status, antiquity } = req.body;
     const { type } = req.user;
 
-    const esAdmin = type === "Administrador" ? true : false;
+    const is_admin = type === "Administrador" ? true : false;
 
-    const filtro = {};
-    if(user_id) filtro.user_id = user_id;
-    if(incident_type) filtro.incident_type = incident_type;
-    if(visitor_type) filtro.visitor_type = visitor_type;
+    let filtro = {};
+    if(user_id && is_admin) filtro.user = user_id; else filtro.user = req.user.id; // Filtra por user_id
+    if(incident_type) filtro.incident_type = incident_type; // Filtra por tipo de incidente
+    if(visitor_type === "Visitante") filtro.user = { $ne: { user: "Anónimo" } }; // Filtra por tipo de usuario
+    else if(visitor_type === "Anónimo") filtro.user = "Anónimo";
     if(status) filtro.status = status;
-    if(antiquity) filtro.antiquity = antiquity;
+    // * falta filtrar por antiguedad
 
-    // Esto queda pendiente ************************************
+    let reports = await ReportsModel.find(filtro);
 
-    res.status(200).json({})
+    reports = reports.filter((report, indice,arrelgo) => {
+      if(!report.anony_reports) return true;
+      else return false;
+    })
+
+    res.status(200).json(reports)
   },
 
   // Importar todos los registros para los administradores

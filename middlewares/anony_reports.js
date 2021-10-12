@@ -8,9 +8,8 @@ async function anony_reports(req, res, next)  {
     const report = await ReportsModel.findOne({ anony_reports: { $in: [true, false] } });
     // const report = await ReportsModel.find();
     console.log(report);
-    console.log("auth", req.headers.authorization)
 
-    if (!report.anony_reports || req.headers.authorization) {
+    if (report.anony_reports || req.headers.authorization) {
         if (req.headers.authorization) {
             const accessToken = req.headers.authorization.split(" ")[1];
             payload = jwt.verify(accessToken, secret);
