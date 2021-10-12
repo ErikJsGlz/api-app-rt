@@ -56,6 +56,7 @@ module.exports = {
         name: name,
         last_name: last_name,
         type: "Visitante",
+        block: false
       });
 
       // Validamos si ya existe el usuario dentro de la base de datos, si no, se crea
