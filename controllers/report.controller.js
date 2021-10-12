@@ -129,6 +129,16 @@ module.exports = {
       else return false;
     })
 
+    reports = reports.map(report => {
+      return {
+        report_id: report._id,
+        title: report.title,
+        incident_type: report.incident_type,
+        urgency_level: report.urgency_level,
+        status: report.status
+      }
+    })
+
     res.status(200).json(reports)
   },
 
