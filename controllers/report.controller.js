@@ -1,6 +1,8 @@
 const ReportsModel = require("../models/report");
 const UsersModel = require("../models/users");
+const MessagesModel = require("../models/message");
 
+// Lista de posibles incidentes
 const incidents = [
   'Luminarias',
   'Basura',
@@ -98,7 +100,7 @@ module.exports = {
     const { reportsPhotoFolder } = require('../config');
     let fullPath = path.join(appRoot + `/${reportsPhotoFolder}/` + photoPath);
     res.sendFile(fullPath);
-},
+  },
 
   // Importar todos los registros para los administradores
   import_reports_admin: async (req, res, next) => {
@@ -134,37 +136,51 @@ module.exports = {
       }
       else {
         res.status(401).send("Error: Estás bloqueado");
-      console.log("El usuario está bloqueado");
+        console.log("El usuario está bloqueado");
       }
-      
     }
     else {
       res.status(401).send("Error: Credencias Invalidas");
       console.log("Credenciales Invalidas");
     }
-    
   },
 
-  //  Cambiamos el status de un reporte
-  change_status: async (req, res, next) => {
-    const id = req.body.id;
-    try {
-      await ReportsModel.updateOne(
-        { _id: id },
-        {
-          $set: {
-            status: req.body.status,
-          },
+  // Actualizamos el estado del reporte y/o podemos dejar un mensaje
+  respond_report: async (req, res, next) => {
+    // Verificamos que el usuario es Administrador
+    const payload = req.user;
+    let admin = await UsersModel.findOne({ _id: payload.id });
+
+
+    const { idReport, new_message, status } = req.body;
+    let report = await ReportsModel.findOne({ _id: idReport });
+
+    if (report) {
+      try {
+        // Se crea el modelo
+        let message = new MessagesModel({ id_user: admin._id, message: new_message });
+
+        // Si es admin se cambia el status y se registra en el mensaje
+        if (admin.type == "Administrador" && status) { 
+          report.status = status; 
+          message.is_admin = true;
         }
-      );
-      res.json({ message: "update made" });
-    }
-    catch (err) {
-      res.status(404).send(`error: ${err.message}`);
-      console.log(err.message);
-    }
-  }
 
-}
+        await report.save();
+        await message.save();
 
-// TODO: Añadir lo del almacenamiento de las fotos
+        res.json({message: "El mensaje se pudo registrar"})
+
+      }
+      catch (err) {
+        res.status(400).send("Error: No se puedo cambiar el estado del Reporte ni se pudo dejar el mensaje");
+        console.log("Reporte sin cambiar de estado");
+      }
+    }
+    else {
+      res.status(400).send("No existe el Reporte");
+      console.log("Reporte inexistente");
+    }
+  },
+
+};

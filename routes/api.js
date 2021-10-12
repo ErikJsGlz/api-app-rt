@@ -22,6 +22,7 @@ router.get("/report/get_report/", requireLogin, report_controller.get_report);
 router.get("/images/:photoPath", report_controller.get_report_image);
 router.get("/report/import_admin", requireLogin, report_controller.import_reports_admin);
 router.get("/report/import_user", requireLogin, report_controller.import_reports_user);
+router.put("/report/respond_report", requireLogin, report_controller.respond_report);
 router.post("/report/change_status", requireLogin, report_controller.change_status);
 
 module.exports = router;
