@@ -137,11 +137,14 @@ module.exports = {
   reset_password: async (req, res, next) => {
     const payload = req.user;
     const { password, new_password, repeated_new_password } = req.body;
+    let hash_password_original = sha256.create();
+    hash_password_original.update(password);
+    password = hash_password.hex();
 
     // Validamos si son contraseñas iguales, si existe el usuario y si coinciden con el usuario
     if (new_password == repeated_new_password) {
       let user = await UsersModel.findOne({ _id: payload.id });
-
+      
       if (user) {
         if (password == user.password) {
           try {
