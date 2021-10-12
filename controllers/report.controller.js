@@ -74,16 +74,22 @@ module.exports = {
   get_report: async (req, res, next) => {
     const { idReporte } = req.body;
 
+    let result = new Array();
+
     try {
       let report = await ReportsModel.findOne({ _id: idReporte });
+      // console.log(report);
+      result.push(report);
 
-      if (report.user) {
-        let user = await UsersModel.findOne({ _id: report.user });
+      if (report.user != "Anónimo") {
+        let user = await UsersModel.findOne({ _id: report.user }, { password: 0, email: 0 });
+        console.log(user);
 
         // Concatenamos todo en un mismo objeto json
-        if (user) { report = report.concat(user); }
+        if (user) { result.push(user); }
+
       }
-      res.json(reports);
+      res.json(result);
     }
     catch (err) {
       res.status(503).end("No se pudo concretar la petición");
@@ -147,30 +153,39 @@ module.exports = {
 
   // Actualizamos el estado del reporte y/o podemos dejar un mensaje
   respond_report: async (req, res, next) => {
+    // Asignación de la fecha en formato DD-MM-AA
+    var today = new Date();
+    var date = today.getDate() + "-" + (today.getMonth() + 1) + "-" + today.getFullYear();
+    var time = today.getHours() + ":" + today.getMinutes();
+
     // Verificamos que el usuario es Administrador
     const payload = req.user;
     let admin = await UsersModel.findOne({ _id: payload.id });
 
-
+    // Buscamos el reporte
     const { idReport, new_message, status } = req.body;
     let report = await ReportsModel.findOne({ _id: idReport });
 
     if (report) {
       try {
         // Se crea el modelo
-        let message = new MessagesModel({ id_user: admin._id, message: new_message });
+        let message = new MessagesModel({
+          id_user: admin._id,
+          id_report: report._id,
+          message: new_message,
+          date: date + " ; " + time,
+        });
 
         // Si es admin se cambia el status y se registra en el mensaje
-        if (admin.type == "Administrador" && status) { 
-          report.status = status; 
+        if (admin.type == "Administrador" && status) {
+          report.status = status;
           message.is_admin = true;
         }
 
         await report.save();
         await message.save();
 
-        res.json({message: "El mensaje se pudo registrar"})
-
+        res.json({ message: "El mensaje se pudo registrar" })
       }
       catch (err) {
         res.status(400).send("Error: No se puedo cambiar el estado del Reporte ni se pudo dejar el mensaje");
@@ -182,5 +197,14 @@ module.exports = {
       console.log("Reporte inexistente");
     }
   },
+
+  get_message_report: async (req, res, next) => {
+
+
+    const { idReporte } = req.body;
+    let report = await ReportsModel.findOne({ _id: idReporte });
+
+  },
+
 
 };
