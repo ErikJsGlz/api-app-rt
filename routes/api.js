@@ -6,7 +6,7 @@ const { uploadMiddleware } = require('../middlewares/upload');
 
 // routes for users
 var user_controller = require("../controllers/user.controller");
-router.get("/user/get_user", requireLogin, user_controller.get_user);
+router.put("/user/get_user", requireLogin, user_controller.get_user);
 router.post("/user/login", user_controller.login);
 router.post("/user/register", user_controller.register);
 router.post("/user/change_admin", requireLogin, user_controller.change_to_admin);
