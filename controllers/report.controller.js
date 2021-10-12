@@ -38,7 +38,7 @@ module.exports = {
       report.incident_type = incident_type;
 
       // En dado caso que sea otro se registra el nivel de urgencia según el enviado
-      if (incident_type = "Otro") { report.urgency_level = urgency_level; }
+      if (incident_type === "Otro") { report.urgency_level = urgency_level; }
       else { report.urgency_level = false; }
     }
     else {
@@ -106,6 +106,40 @@ module.exports = {
     const { reportsPhotoFolder } = require('../config');
     let fullPath = path.join(appRoot + `/${reportsPhotoFolder}/` + photoPath);
     res.sendFile(fullPath);
+  },
+
+  get_summaries: async (req, res) => {
+    const { user_id, incident_type, visitor_type, status, antiquity } = req.body;
+    const { type } = req.user;
+
+    const is_admin = type === "Administrador" ? true : false;
+
+    let filtro = {};
+    if(user_id && is_admin) filtro.user = user_id; else filtro.user = req.user.id; // Filtra por user_id
+    if(incident_type) filtro.incident_type = incident_type; // Filtra por tipo de incidente
+    if(visitor_type === "Visitante") filtro.user = { $ne: { user: "Anónimo" } }; // Filtra por tipo de usuario
+    else if(visitor_type === "Anónimo") filtro.user = "Anónimo";
+    if(status) filtro.status = status;
+    // * falta filtrar por antiguedad
+
+    let reports = await ReportsModel.find(filtro);
+
+    reports = reports.filter((report, indice,arrelgo) => {
+      if(!report.anony_reports) return true;
+      else return false;
+    })
+
+    reports = reports.map(report => {
+      return {
+        report_id: report._id,
+        title: report.title,
+        incident_type: report.incident_type,
+        urgency_level: report.urgency_level,
+        status: report.status
+      }
+    })
+
+    res.status(200).json(reports)
   },
 
   // Importar todos los registros para los administradores
