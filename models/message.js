@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 
 const MessagesSchema = new mongoose.Schema({
     id_user: { type: String, require: true },
+    name: { type: String, require: true },
+    last_name: { type: String, require: true },
     id_report: { type: String, require: true },
     message: { type: String, require: true },
     date: { type: String, require: true },

@@ -163,14 +163,16 @@ module.exports = {
     let admin = await UsersModel.findOne({ _id: payload.id });
 
     // Buscamos el reporte
-    const { idReport, new_message, status } = req.body;
-    let report = await ReportsModel.findOne({ _id: idReport });
+    const { idReporte, new_message, status } = req.body;
+    let report = await ReportsModel.findOne({ _id: idReporte });
 
     if (report) {
       try {
         // Se crea el modelo
         let message = new MessagesModel({
           id_user: admin._id,
+          name: admin.name,
+          last_name: admin.last_name,
           id_report: report._id,
           message: new_message,
           date: date + " ; " + time,
@@ -199,11 +201,23 @@ module.exports = {
   },
 
   get_message_report: async (req, res, next) => {
-
-
     const { idReporte } = req.body;
     let report = await ReportsModel.findOne({ _id: idReporte });
 
+    if (report) {
+      let messages = await MessagesModel.find({ id_report: idReporte });
+      if (messages) {
+        res.json(messages);
+      }
+      else {
+        res.status(400).send("No existen mensajes para ese reporte");
+        console.log("Reporte sin mensajes");
+      }
+    }
+    else {
+      res.status(400).send("No existe el Reporte");
+      console.log("Reporte inexistente");
+    }
   },
 
 
