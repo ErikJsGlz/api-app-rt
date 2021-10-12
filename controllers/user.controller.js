@@ -7,7 +7,7 @@ module.exports = {
 
   // Pedimos un usuario mediante su correo, y devolvemos: nombre, apellido y idUsuario
   get_user: async (req, res, next) => {
-    const { email } = req.body;
+    const email = req.user.email;
     let user = await UsersModel.findOne({ email: email });
 
     if (user) {

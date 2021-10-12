@@ -102,6 +102,24 @@ module.exports = {
     res.sendFile(fullPath);
   },
 
+  get_summaries: async (req, res) => {
+    const { user_id, incident_type, visitor_type, status, antiquity } = req.body;
+    const { type } = req.user;
+
+    const esAdmin = type === "Administrador" ? true : false;
+
+    const filtro = {};
+    if(user_id) filtro.user_id = user_id;
+    if(incident_type) filtro.incident_type = incident_type;
+    if(visitor_type) filtro.visitor_type = visitor_type;
+    if(status) filtro.status = status;
+    if(antiquity) filtro.antiquity = antiquity;
+
+    // Esto queda pendiente ************************************
+
+    res.status(200).json({})
+  },
+
   // Importar todos los registros para los administradores
   import_reports_admin: async (req, res, next) => {
     try {
