@@ -11,7 +11,7 @@ module.exports = {
     let user = await UsersModel.findOne({ email: email });
 
     if (user) {
-      res.status(200).json({ name: user.name, last_name: user.last_name, idUsuario: user.idUsuario });
+      res.status(200).json({ name: user.name, last_name: user.last_name, user_id: user._id });
     }
     else {
       res.status(400).send("No existe el usuario");
