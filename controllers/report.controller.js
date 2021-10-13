@@ -74,12 +74,8 @@ module.exports = {
   get_report: async (req, res, next) => {
     const { idReporte } = req.body;
 
-    // let result = new Array();
-    let result = [];
-
     try {
       let report = await ReportsModel.findOne({ _id: idReporte });
-      // console.log(report);
 
       if (report.user != "Anónimo") {
         let user = await UsersModel.findOne({ _id: report.user }, { password: 0, email: 0 });
@@ -87,8 +83,7 @@ module.exports = {
 
         // Concatenamos todo en un mismo objeto json
         if (user) {
-          // result.push(user); 
-          result.push({
+          const result = {
             _id: report._id,
             status: report.status,
             urgency_level: report.urgency_level,
@@ -98,21 +93,21 @@ module.exports = {
             idUsuario: user._id,
             nombreUsuario: user.name,
             apellidoUsuario: user.last_name
-          })
+          };
+          res.json(result);
         }
       }
       else {
-        result.push({
+        const result = {
           _id: report._id,
           status: report.status,
           urgency_level: report.urgency_level,
           date: report.date,
           description: report.description,
           location: report.location,
-        })
+        }
+        res.json(result);
       }
-
-      res.json(result);
     }
     catch (err) {
       res.status(503).end("No se pudo concretar la petición");
