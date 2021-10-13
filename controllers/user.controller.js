@@ -139,14 +139,14 @@ module.exports = {
     const { password, new_password, repeated_new_password } = req.body;
     let hash_password_original = sha256.create();
     hash_password_original.update(password);
-    password = hash_password_original.hex();
+    hash_password_original.hex();
 
     // Validamos si son contraseñas iguales, si existe el usuario y si coinciden con el usuario
     if (new_password == repeated_new_password) {
       let user = await UsersModel.findOne({ _id: payload.id });
       
       if (user) {
-        if (password == user.password) {
+        if (hash_password_original == user.password) {
           try {
             let hash_password = sha256.create();
             hash_password.update(new_password);
