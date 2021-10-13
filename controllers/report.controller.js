@@ -72,10 +72,11 @@ module.exports = {
 
   // Obtenemos un reporte específico
   get_report: async (req, res, next) => {
-    const { idReporte } = req.body;
+    const { report_id } = req.body;
 
     try {
-      let report = await ReportsModel.findOne({ _id: idReporte });
+      let report = await ReportsModel.findOne({ _id: report_id });
+      // console.log(report);
 
       if (report.user != "Anónimo") {
         let user = await UsersModel.findOne({ _id: report.user }, { password: 0, email: 0 });
@@ -215,8 +216,8 @@ module.exports = {
     let admin = await UsersModel.findOne({ _id: payload.id });
 
     // Buscamos el reporte
-    const { idReporte, new_message, status } = req.body;
-    let report = await ReportsModel.findOne({ _id: idReporte });
+    const { report_id, new_message, status } = req.body;
+    let report = await ReportsModel.findOne({ _id: report_id });
 
     if (report) {
       try {
@@ -253,11 +254,11 @@ module.exports = {
   },
 
   get_message_report: async (req, res, next) => {
-    const { idReporte } = req.body;
-    let report = await ReportsModel.findOne({ _id: idReporte });
+    const { report_id } = req.body;
+    let report = await ReportsModel.findOne({ _id: report_id });
 
     if (report) {
-      let messages = await MessagesModel.find({ id_report: idReporte });
+      let messages = await MessagesModel.find({ id_report: report_id });
       if (messages) {
         res.json(messages);
       }
