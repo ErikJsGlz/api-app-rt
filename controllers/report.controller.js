@@ -74,21 +74,44 @@ module.exports = {
   get_report: async (req, res, next) => {
     const { idReporte } = req.body;
 
-    let result = new Array();
+    // let result = new Array();
+    let result = [];
 
     try {
       let report = await ReportsModel.findOne({ _id: idReporte });
       // console.log(report);
-      result.push(report);
 
       if (report.user != "Anónimo") {
         let user = await UsersModel.findOne({ _id: report.user }, { password: 0, email: 0 });
         console.log(user);
 
         // Concatenamos todo en un mismo objeto json
-        if (user) { result.push(user); }
-
+        if (user) {
+          // result.push(user); 
+          result.push({
+            _id: report._id,
+            status: report.status,
+            urgency_level: report.urgency_level,
+            date: report.date,
+            description: report.description,
+            location: report.location,
+            idUsuario: user._id,
+            nombreUsuario: user.name,
+            apellidoUsuario: user.last_name
+          })
+        }
       }
+      else {
+        result.push({
+          _id: report._id,
+          status: report.status,
+          urgency_level: report.urgency_level,
+          date: report.date,
+          description: report.description,
+          location: report.location,
+        })
+      }
+
       res.json(result);
     }
     catch (err) {
@@ -115,17 +138,17 @@ module.exports = {
     const is_admin = type === "Administrador" ? true : false;
 
     let filtro = {};
-    if(user_id && is_admin) filtro.user = user_id; else filtro.user = req.user.id; // Filtra por user_id
-    if(incident_type) filtro.incident_type = incident_type; // Filtra por tipo de incidente
-    if(visitor_type === "Visitante") filtro.user = { $ne: { user: "Anónimo" } }; // Filtra por tipo de usuario
-    else if(visitor_type === "Anónimo") filtro.user = "Anónimo";
-    if(status) filtro.status = status;
+    if (user_id && is_admin) filtro.user = user_id; else filtro.user = req.user.id; // Filtra por user_id
+    if (incident_type) filtro.incident_type = incident_type; // Filtra por tipo de incidente
+    if (visitor_type === "Visitante") filtro.user = { $ne: { user: "Anónimo" } }; // Filtra por tipo de usuario
+    else if (visitor_type === "Anónimo") filtro.user = "Anónimo";
+    if (status) filtro.status = status;
     // * falta filtrar por antiguedad
 
     let reports = await ReportsModel.find(filtro);
 
-    reports = reports.filter((report, indice,arrelgo) => {
-      if(!report.anony_reports) return true;
+    reports = reports.filter((report, indice, arrelgo) => {
+      if (!report.anony_reports) return true;
       else return false;
     })
 
