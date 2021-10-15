@@ -133,6 +133,17 @@ module.exports = {
     }
   },
 
+  get_admins: async (req, res, next) => {
+    try {
+      let admins = await UsersModel.find({ type: "Administrador"})
+      res.status(200).json(admins);
+    }
+    catch (err) {
+      res.status(503).send(`Error: ${err.message}`);
+      console.log(err.message);
+    }
+  },
+
   // Cambiamos la contraseña
   reset_password: async (req, res, next) => {
     const payload = req.user;
