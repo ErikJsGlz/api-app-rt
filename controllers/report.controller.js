@@ -224,32 +224,39 @@ module.exports = {
     let report = await ReportsModel.findOne({ _id: report_id });
 
     if (report) {
-      try {
-        // Se crea el modelo
-        let message = new MessagesModel({
-          id_user: admin._id,
-          name: admin.name,
-          last_name: admin.last_name,
-          id_report: report._id,
-          message: new_message,
-          date: date + " ; " + time,
-        });
+      if (report._id == admin._id || admin.type == "Administrador") {
+        try {
+          // Se crea el modelo
+          let message = new MessagesModel({
+            id_user: admin._id,
+            name: admin.name,
+            last_name: admin.last_name,
+            id_report: report._id,
+            message: new_message,
+            date: date + " ; " + time,
+          });
 
-        // Si es admin se cambia el status y se registra en el mensaje
-        if (admin.type == "Administrador" && status) {
-          report.status = status;
-          message.is_admin = true;
+          // Si es admin se cambia el status y se registra en el mensaje
+          if (admin.type == "Administrador" && status) {
+            report.status = status;
+            message.is_admin = true;
+          }
+
+          await report.save();
+          await message.save();
+
+          res.json({ message: "El mensaje se pudo registrar" })
         }
-
-        await report.save();
-        await message.save();
-
-        res.json({ message: "El mensaje se pudo registrar" })
+        catch (err) {
+          res.status(400).send("Error: No se puedo cambiar el estado del Reporte ni se pudo dejar el mensaje");
+          console.log("Reporte sin cambiar de estado");
+        }
       }
-      catch (err) {
-        res.status(400).send("Error: No se puedo cambiar el estado del Reporte ni se pudo dejar el mensaje");
-        console.log("Reporte sin cambiar de estado");
+      else {
+        res.status(400).send(`Error: No es su reporte o no es Administrador`);
+        console.log("El reporte no pertenece a ese usuario o no es de tipo Administrador");
       }
+
     }
     else {
       res.status(400).send("No existe el Reporte");
