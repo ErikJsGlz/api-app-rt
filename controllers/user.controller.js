@@ -3,6 +3,10 @@ const ReportsModel = require("../models/report");
 const { generateToken } = require("../middlewares/authentication");
 var sha256 = require('js-sha256');
 
+function emailIsValid(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 module.exports = {
 
   // Pedimos un usuario mediante su correo, y devolvemos: nombre, apellido y idUsuario
@@ -49,38 +53,54 @@ module.exports = {
     hash_password.update(password);
     hash_password.hex();
 
-    if (password == repeated_password) {
-      let user = new UsersModel({
-        email: email,
-        password: hash_password,
-        name: name,
-        last_name: last_name,
-        type: "Visitante",
-        block: false
-      });
+    if (emailIsValid(email)) {
+      let isRepeatedUser = new UsersModel.findOne({ email: email });
+      if (!isRepeatedUser) {
+        if (password == repeated_password) {
+          let user = new UsersModel({
+            email: email,
+            password: hash_password,
+            name: name,
+            last_name: last_name,
+            type: "Visitante",
+            block: false
+          });
 
-      // Validamos si ya existe el usuario dentro de la base de datos, si no, se crea
-      repeat_user = await UsersModel.findOne({ email: email });
-      if (!repeat_user) {
-        try {
-          await user.save();
-          res.json(user);
-          console.log(`Usuario creado con id: ${user._id}`);
+          // Validamos si ya existe el usuario dentro de la base de datos, si no, se crea
+          repeat_user = await UsersModel.findOne({ email: email });
+          if (!repeat_user) {
+            try {
+              await user.save();
+              res.json(user);
+              console.log(`Usuario creado con id: ${user._id}`);
+            }
+            catch (err) {
+              res.status(503).send(`Error: ${err.message}`);
+              console.log(err.message);
+            }
+          }
+          else {
+            res.status(400).send("Error: Ya hay un usuario con ese correo");
+            console.log("Usuario repetido");
+          }
         }
-        catch (err) {
-          res.status(503).send(`Error: ${err.message}`);
-          console.log(err.message);
+        else {
+          res.status(400).send(`Error: Las contraseñas no coinciden`);
+          console.log("Contraseñas no coinciden");
         }
       }
       else {
-        res.status(400).send("Error: Ya hay un usuario con ese correo");
-        console.log("Usuario repetido");
+        res.status(400).send(`Error: El usuario ya existente`);
+        console.log("Usuario ya existente en la base de datos");
       }
+
     }
     else {
-      res.status(400).send(`Error: Las contraseñas no coinciden`);
-      console.log("Contraseñas no coinciden");
+      res.status(400).send(`Error: No es un correo válido`);
+      console.log("El correo no tiene un formato adecuado");
     }
+
+
   },
 
   // Se cambia una cuenta de tipo "Usuario" a "Administrador"
@@ -135,7 +155,7 @@ module.exports = {
 
   get_admins: async (req, res, next) => {
     try {
-      let admins = await UsersModel.find({ type: "Administrador"})
+      let admins = await UsersModel.find({ type: "Administrador" })
       res.status(200).json(admins);
     }
     catch (err) {
@@ -155,7 +175,7 @@ module.exports = {
     // Validamos si son contraseñas iguales, si existe el usuario y si coinciden con el usuario
     if (new_password == repeated_new_password) {
       let user = await UsersModel.findOne({ _id: payload.id });
-      
+
       if (user) {
         if (hash_password_original == user.password) {
           try {
@@ -269,15 +289,15 @@ module.exports = {
         let user = await UsersModel.findOne({ _id: idUsuario });
 
         // Solo se pueden bloquear usuarios visitantes y no a otros administrador
-        if (user.type == "Visitante") { 
-          user.block = true; 
+        if (user.type == "Visitante") {
+          user.block = true;
           await user.save();
 
           res.json({ message: "El usuario: " + user.id + " ahora está bloqueado" });
           console.log(user.id + " está ahora bloqueado");
         }
         else {
-          res.json({ message: "El usuario: " + user.id + " es Administrador y no se puede bloquear"});
+          res.json({ message: "El usuario: " + user.id + " es Administrador y no se puede bloquear" });
           console.log(user.id + " es Administrador");
         }
       }
