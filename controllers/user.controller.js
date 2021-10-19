@@ -111,6 +111,7 @@ module.exports = {
 
       if (new_admin) {
         if (new_admin.type == "Visitante") {
+          new_admin.main = false;
           // Si es true, entonces se actualiza a administrador, de lo contrario baja su categoría a visitante
           if (add_or_delete) {
             try {
