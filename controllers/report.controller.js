@@ -85,22 +85,26 @@ module.exports = {
         // Concatenamos todo en un mismo objeto json
         if (user) {
           const result = {
-            _id: report._id,
+            report_id: report._id,
+            title: report.title,
+            incident_type: report.incident_type,
             status: report.status,
             urgency_level: report.urgency_level,
             date: report.date,
             description: report.description,
             location: report.location,
-            idUsuario: user._id,
-            nombreUsuario: user.name,
-            apellidoUsuario: user.last_name
+            user_id: user._id,
+            name: user.name,
+            last_name: user.last_name
           };
           res.json(result);
         }
       }
       else {
         const result = {
-          _id: report._id,
+          report_id: report._id,
+          title: report.title,
+          incident_type: report.incident_type,
           status: report.status,
           urgency_level: report.urgency_level,
           date: report.date,
