@@ -12,7 +12,7 @@ module.exports = {
   // Pedimos un usuario mediante su correo, y devolvemos: nombre, apellido y idUsuario
   get_user: async (req, res, next) => {
     const email = req.user.email;
-    let user = await UsersModel.findOne({ email: email }, {password: 0});
+    let user = await UsersModel.findOne({ email: email }, { password: 0 });
 
     if (user) {
       res.status(200).json(user);
@@ -110,37 +110,31 @@ module.exports = {
       let new_admin = await UsersModel.findOne({ email: email });
 
       if (new_admin) {
-        if (new_admin.type == "Visitante") {
-          new_admin.main = false;
-          // Si es true, entonces se actualiza a administrador, de lo contrario baja su categoría a visitante
-          if (add_or_delete) {
-            try {
-              new_admin.type = "Administrador";
-              await new_admin.save();
-              res.json({ message: "Se actualizó a Administrador" });
-              console.log(`El usuario: ${new_admin._id} es ahora Administrador`);
-            }
-            catch (err) {
-              res.status(400).send("Error: No se pudo actualizar al usuario");
-              console.log(`No se pudo actualizar el usuario con el ${new_admin._id}`);
-            }
+        new_admin.main = false;
+        // Si es true, entonces se actualiza a administrador, de lo contrario baja su categoría a visitante
+        if (add_or_delete) {
+          try {
+            new_admin.type = "Administrador";
+            await new_admin.save();
+            res.json({ message: "Se actualizó a Administrador" });
+            console.log(`El usuario: ${new_admin._id} es ahora Administrador`);
           }
-          else {
-            try {
-              new_admin.type = "Visitante";
-              await new_admin.save()
-              res.json({ message: "Se actualizó a Visitante" });
-              console.log(`El usuario: ${new_admin._id} es ahora Visitante`);
-            }
-            catch (err) {
-              res.status(400).send("Error: No se pudo actualizar al usuario");
-              console.log(`No se pudo actualizar el usuario con el ${new_admin._id}`);
-            }
+          catch (err) {
+            res.status(400).send("Error: No se pudo actualizar al usuario");
+            console.log(`No se pudo actualizar el usuario con el ${new_admin._id}`);
           }
         }
         else {
-          res.status(400).send("Error: El usuario ya es Administrador");
-          console.log("El usuario ya es Administrador");
+          try {
+            new_admin.type = "Visitante";
+            await new_admin.save()
+            res.json({ message: "Se actualizó a Visitante" });
+            console.log(`El usuario: ${new_admin._id} es ahora Visitante`);
+          }
+          catch (err) {
+            res.status(400).send("Error: No se pudo actualizar al usuario");
+            console.log(`No se pudo actualizar el usuario con el ${new_admin._id}`);
+          }
         }
 
       }
