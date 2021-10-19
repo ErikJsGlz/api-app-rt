@@ -54,7 +54,9 @@ module.exports = {
     hash_password.hex();
 
     if (emailIsValid(email)) {
-      let isRepeatedUser = new UsersModel.findOne({ email: email });
+      // Validamos si ya existe el usuario dentro de la base de datos, si no, se crea
+      let isRepeatedUser = await UsersModel.findOne({ email: email });
+
       if (!isRepeatedUser) {
         if (password == repeated_password) {
           let user = new UsersModel({
@@ -66,22 +68,14 @@ module.exports = {
             block: false
           });
 
-          // Validamos si ya existe el usuario dentro de la base de datos, si no, se crea
-          repeat_user = await UsersModel.findOne({ email: email });
-          if (!repeat_user) {
-            try {
-              await user.save();
-              res.json(user);
-              console.log(`Usuario creado con id: ${user._id}`);
-            }
-            catch (err) {
-              res.status(503).send(`Error: ${err.message}`);
-              console.log(err.message);
-            }
+          try {
+            await user.save();
+            res.json(user);
+            console.log(`Usuario creado con id: ${user._id}`);
           }
-          else {
-            res.status(400).send("Error: Ya hay un usuario con ese correo");
-            console.log("Usuario repetido");
+          catch (err) {
+            res.status(503).send(`Error: ${err.message}`);
+            console.log(err.message);
           }
         }
         else {
@@ -116,31 +110,38 @@ module.exports = {
       let new_admin = await UsersModel.findOne({ email: email });
 
       if (new_admin) {
-        // Si es true, entonces se actualiza a administrador, de lo contrario baja su categoría a visitante
-        if (add_or_delete) {
-          try {
-            new_admin.type = "Administrador";
-            await new_admin.save();
-            res.json({ message: "Se actualizó a Administrador" });
-            console.log(`El usuario: ${new_admin._id} es ahora Administrador`);
+        if (new_admin.type == "Visitante") {
+          // Si es true, entonces se actualiza a administrador, de lo contrario baja su categoría a visitante
+          if (add_or_delete) {
+            try {
+              new_admin.type = "Administrador";
+              await new_admin.save();
+              res.json({ message: "Se actualizó a Administrador" });
+              console.log(`El usuario: ${new_admin._id} es ahora Administrador`);
+            }
+            catch (err) {
+              res.status(400).send("Error: No se pudo actualizar al usuario");
+              console.log(`No se pudo actualizar el usuario con el ${new_admin._id}`);
+            }
           }
-          catch (err) {
-            res.status(400).send("Error: No se pudo actualizar al usuario");
-            console.log(`No se pudo actualizar el usuario con el ${new_admin._id}`);
+          else {
+            try {
+              new_admin.type = "Visitante";
+              await new_admin.save()
+              res.json({ message: "Se actualizó a Visitante" });
+              console.log(`El usuario: ${new_admin._id} es ahora Visitante`);
+            }
+            catch (err) {
+              res.status(400).send("Error: No se pudo actualizar al usuario");
+              console.log(`No se pudo actualizar el usuario con el ${new_admin._id}`);
+            }
           }
         }
         else {
-          try {
-            new_admin.type = "Visitante";
-            await new_admin.save()
-            res.json({ message: "Se actualizó a Visitante" });
-            console.log(`El usuario: ${new_admin._id} es ahora Visitante`);
-          }
-          catch (err) {
-            res.status(400).send("Error: No se pudo actualizar al usuario");
-            console.log(`No se pudo actualizar el usuario con el ${new_admin._id}`);
-          }
+          res.status(400).send("Error: El usuario ya es Administrador");
+          console.log("El usuario ya es Administrador");
         }
+
       }
       else {
         res.status(400).send("Error: No existe el usuario");
