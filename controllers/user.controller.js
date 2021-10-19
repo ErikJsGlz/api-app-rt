@@ -12,10 +12,10 @@ module.exports = {
   // Pedimos un usuario mediante su correo, y devolvemos: nombre, apellido y idUsuario
   get_user: async (req, res, next) => {
     const email = req.user.email;
-    let user = await UsersModel.findOne({ email: email });
+    let user = await UsersModel.findOne({ email: email }, {password: 0});
 
     if (user) {
-      res.status(200).json({ name: user.name, last_name: user.last_name, user_id: user._id, type: user.type });
+      res.status(200).json(user);
     }
     else {
       res.status(400).send("No existe el usuario");
