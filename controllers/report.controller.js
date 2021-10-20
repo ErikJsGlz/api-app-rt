@@ -60,7 +60,7 @@ module.exports = {
     if (req.body.location) { report.location = req.body.location; }
 
     // Si tiene fotos, le almacenamos la dirección
-    if (req.file) { report.photo = req.file; }
+    if (req.file) { report.photo = req.file.filename; }
 
     try {
       await report.save();
