@@ -23,7 +23,9 @@ module.exports = {
     var time = today.getHours() + ":" + today.getMinutes();
 
     // Extraemos los datos de req.body y armamos el modelo
-    const { title, urgency_level, incident_type, description } = req.body;
+    //const { title, urgency_level, incident_type, description } = req.body;
+    let { title, urgency_level, incident_type, description } = JSON.parse(req.body.report)
+    console.log(req.body);
 
     let report = new ReportsModel({
       status: "Enviado",
@@ -44,6 +46,7 @@ module.exports = {
     else {
       res.status(503).end("Error: No se pudo concretar el registro del reporte");
       console.log("El tipo de incidente no es válido");
+      return;
     }
 
     // Si lo registra un usuario, estamos seguros, que tiene un id, entonces se relaciona con el reporte
