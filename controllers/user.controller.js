@@ -278,11 +278,11 @@ module.exports = {
     // Obtenemos el id y buscamos el admin
     const payload = req.user;
     let admin = await UsersModel.findOne({ _id: payload.id });
-    const { idUsuario } = req.body;
+    const { user_id } = req.body;
 
     if (admin.type == "Administrador") {
       try {
-        let user = await UsersModel.findOne({ _id: idUsuario });
+        let user = await UsersModel.findOne({ _id: user_id });
 
         // Solo se pueden bloquear usuarios visitantes y no a otros administrador
         if (user.type == "Visitante") {

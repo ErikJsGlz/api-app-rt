@@ -25,6 +25,6 @@ router.put("/report/get_summaries", requireLogin, report_controller.get_summarie
 router.get("/report/import_admin", requireLogin, report_controller.import_reports_admin);
 router.get("/report/import_user", requireLogin, report_controller.import_reports_user);
 router.post("/report/respond_report", requireLogin, report_controller.respond_report);
-router.get("/report/get_message_report", requireLogin, report_controller.get_message_report);
+router.put("/report/get_message_report", requireLogin, report_controller.get_message_report);
 
 module.exports = router;
