@@ -216,7 +216,7 @@ module.exports = {
     if (mainAdmin.type == "Administrador" && mainAdmin.main) {
       let new_main_admin = await UsersModel.findOne({ email: email });
 
-      if (new_main_admin) {
+      if (new_main_admin.type == "Administrador") {
         try {
           new_main_admin.main = true;
           mainAdmin.main = false;
