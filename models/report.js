@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const ReportsSchema = new mongoose.Schema({
   status: { type: String, require: true },
   title: { type: String, require: true },
-  urgency_level: { type: Boolean, require: true },
+  urgency_level: { type: Boolean, require: false },
   incident_type: { type: String, require: false },
   user: { type: String, require: false }, // Podría ser un usuario anónimo
   date: { type: String, require: true },

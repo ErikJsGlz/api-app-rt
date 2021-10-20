@@ -23,7 +23,8 @@ module.exports = {
     var time = today.getHours() + ":" + today.getMinutes();
 
     // Extraemos los datos de req.body y armamos el modelo
-    const { title, urgency_level, incident_type, description } = req.body;
+    // const { title, urgency_level, incident_type, description } = req.body;
+    let { title, urgency_level, incident_type, description } = JSON.parse(req.body.report);
 
     let report = new ReportsModel({
       status: "Enviado",
