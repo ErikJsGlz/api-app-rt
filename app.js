@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const app = express();
 
 app.use(express.json());
-var port = 3000;
 
 // Routes
 var api = require("./routes/api.js");
