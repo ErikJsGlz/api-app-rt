@@ -17,6 +17,5 @@ db.once("open", function () {
 });
 
 app.use("/api", api);
-app.listen(port, () => {
-  console.log("Server up and running in the port: " + port);
-});
+
+module.exports = app;
